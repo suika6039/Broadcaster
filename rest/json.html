@@ -1,0 +1,27 @@
+<html>
+<head>
+	<script type="text/javascript" src="./jquery-1.7.1.js"></script>
+	<script>
+	function sendReq()
+	{
+		$.getJSON("api/json",function(json){
+			alert(json.hogefuga);
+			alert(json.aaaaaa[1]);
+		});
+	}
+	
+	function sendReq2()
+	{
+		$.getJSON("api/json",{p:$("#text").attr("value")},function(json){
+			alert(json.p);
+		});
+	}
+	</script>
+</head>
+<body>
+	<p>this is a test.</p>
+	<a href="javascript:sendReq()">click me!</a>
+	<input id="text" type="text"/>
+	<a href="javascript:sendReq2()">click me!</a>
+</body>
+</html>

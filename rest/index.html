@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html>
+<head>
+ <title>Broadcaster Client</title>
+ <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+ <script type="text/javascript" src="./jquery-1.7.1.js"></script>
+ <script type="text/javascript" src="./jquery-ui-1.8.17.custom.min.js"></script>
+ <script type="text/javascript" src="./flowplayer-3.2.6.min.js"></script>
+ <link type="text/css" href="jquery-ui-1.8.17.custom.css" rel="stylesheet"/>
+ <script type="text/javascript">
+ function getPlayers(_panel)
+ {
+  $('#dialog').dialog('open');
+  $.getJSON('./api/players',function(_json){
+   var items = [];
+   $.each(_json,function(_pid,_name){
+    items.push('<li><p><a href="javascript:watch(\''+_pid+'\')">'+_name+'</a></p></li>');
+   });
+   $(_panel).empty();
+   $('<ul/>',{
+    html: items.join('')
+   }).appendTo($(_panel));
+   $('#dialog').dialog('close');
+  });
+ }
+ function watch(_pid){
+  $('#watchDialog').dialog({
+   autoOpen: true,modal: true,minWidth: 480,minHeight: 360,
+   open: function(_event,_ui){
+    flowplayer('player','./flowplayer-3.2.7-0.swf',{
+     clip: {
+	  autoBuffering: false,
+      url: "./api/flv?pid="+_pid,
+     provider: "http",
+     scaling: "fit",
+     onBeforePause: function(){
+      return false;
+     }
+    }
+    });
+   }
+  });
+ }
+ function create(_id,_pid){
+  $('#createDialog').dialog({
+   autoOpen: false,resizable: false,modal: true,draggable: false,closeOnEscape: false,
+   buttons: {
+    "OK": function(){
+     $.getJSON('./api/create',{rid:_id,pid:_pid},function(_json){
+      if(_json.status == "success"){
+       $('#createDialog').dialog('close');
+      }else{
+       $('#createDialog').text(_json.message);
+      }
+     });
+    },
+    "Cancel": function(){
+     $(this).dialog("close");
+    }
+   },
+   open: function(){
+	$(this).text("動画の配信を開始しますがよろしいですか？");
+   }
+  });
+  $('#createDialog').dialog('open');
+ }
+ function views(){
+  $(function(){
+   // Tabs
+   $('#tabs').tabs();
+   
+   $('#tabs').bind('tabsselect',function(_event,_ui){
+    var tabPanelID = $(_ui.panel).attr('id');
+    if(tabPanelID == "tabs-1"){
+     getPlayers(_ui.panel);
+    }
+    
+    if(tabPanelID == "tabs-2"){
+     $('#dialog').dialog('open');
+     $.getJSON("./api/resources",function(json){
+      var items = [];
+      $.each(json,function(_pid,_resources){
+       $.each(_resources,function(_name,_id){
+	    items.push('<li><p><a href="javascript:create(\''+_id+'\',\''+_pid+'\')">'+_name+'</a></p></li>');
+       });
+      }); 
+      $(_ui.panel).empty();
+      $('<ul/>',{
+       html: items.join('')
+      }).appendTo($(_ui.panel));
+      $('#dialog').dialog('close');
+     });
+    }
+   });
+   
+   // Dialog
+   $('#dialog').dialog({
+	autoOpen: false,resizable: false,modal: true,draggable: false,closeOnEscape: false,
+	disabled: true
+   });
+   
+   // Dialog Link
+   $(function(){
+    $("a","#tabs-1").button();
+    $("a","#tabs-1").click(function(){
+     $("#dialog").dialog("open");
+    });
+   });
+  })
+  
+  //focus tab.
+  getPlayers($("#tabs-1"));
+ }
+ </script>
+</head>
+<body onload="javascript:views()" style="background-color: gray; font-size: small;">
+<h1 style="color: white;">
+Broadcaster
+</h1>
+<div id="tabs">
+ <ul>
+  <li><a href="#tabs-1">配信を見る</a></li>
+  <li><a href="#tabs-2">配信を開始する</a></li>
+  <li><a href="#tabs-3">アップロードする</a></li>
+  <li><a href="#tabs-4">Youtubeから</a></li>
+ </ul>
+ 
+ <!-- 配信中の動画一覧を列挙する -->
+ <div id="tabs-1">
+  <div class="ui-widget">
+   <div class="ui-state-highlight ui-corner-all" style="margin-top: 20px; padding:0 .7em;">
+   <p><span class="ui-icon ui-icon-info" style="float: left; margin-right: .3em;"></span>配信中のリストから動画を選ぶことで再生が始まります．</p>
+   </div>
+  </div>
+  
+  <br/>
+  <a href="#dialog">open</a>
+ </div>
+ 
+ <!-- 動画を選んで配信を開始する -->
+ <div id="tabs-2">
+ </div>
+ 
+ <!-- アップロード -->
+ <div id="tabs-3">
+  <div class="ui-widget">
+   <div class="ui-state-highlight ui-corner-all" style="margin-top: 20px; padding:0 .7em;">
+   <p><span class="ui-icon ui-icon-info" style="float: left; margin-right: .3em;"></span>まだ作ってないｗｗｗｗｗｗｗｗ</p>
+   </div>
+  </div>
+ </div>
+ 
+ <!-- YoutubeのURLを貼り付ける -->
+ <div id="tabs-4">
+  <div class="ui-widget">
+   <div class="ui-state-highlight ui-corner-all" style="margin-top: 20px; padding:0 .7em;">
+   <p><span class="ui-icon ui-icon-info" style="float: left; margin-right: .3em;"></span>まだ作ってないｗｗｗｗｗｗｗｗ</p>
+   </div>
+  </div>
+ </div>
+ 
+</div>
+<div id="dialog" style="align:center">
+ <p style="align: center">Loading...</p>
+</div>
+<div id="createDialog"></div>
+<div id="watchDialog">
+ <a id="player"></a>
+</div>
+</body>
+</html>

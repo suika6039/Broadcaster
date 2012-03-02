@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="Broadcaster" default="build">
+	<property name="dist" value="./bin"/>
+	<property name="src" value="./src"/>
+	<property name="lib" value="./lib"/>
+	<property name="jar" value="./jar"/>
+	<property name="release" value="./release"/>
+	
+	<path id="lib">
+		<fileset dir="${lib}">
+			<include name="*.jar"/>
+		</fileset>
+	</path>
+	
+	<target name="build">
+		<mkdir dir="${dist}"/>
+		<javac srcdir="${src}" destdir="${dist}" includeantruntime="false">
+			<classpath refid="lib"/>
+		</javac>
+	</target>
+	
+	<target name="clean">
+		<delete dir="${dist}"/>
+		<delete dir="${jar}"/>
+		<delete dir="${release}"/>
+	</target>
+	
+	<target name="start">
+		<java classname="ssrv.jetty.FLVServer" fork="true">
+			<classpath path="./bin"/>
+			<classpath path="lib"/>
+		</java>
+	</target>
+	
+	<target name="proxy">
+		<java classname="ssrv.jetty.FLVProxyServer" fork="true">
+			<classpath path="./bin"/>
+			<classpath path="lib"/>
+		</java>
+	</target>
+	
+	<target name="jar">
+		<mkdir dir="${jar}"/>
+		<manifestclasspath property="jar.classpath" jarfile="Broadcaster.jar">
+			<classpath refid="lib"/>
+		</manifestclasspath>
+		<jar basedir="${dist}" destfile="${jar}/Broadcaster.jar">
+			<zipfileset dir="${lib}" prefix="${lib}"/>
+			<manifest>
+				<attribute name="Main-Class" value="ssrv.jetty.FLVServer"/>
+				<attribute name="Class-Path" value="${jar.classpath}"/>
+			</manifest>
+		</jar>
+	</target>
+	
+	<target name="release">
+		<mkdir dir="${release}"/>
+		<zip destfile="${release}/Broadcaster.zip">
+			<zipfileset dir="${jar}" includes="Broadcaster.jar"/>
+			<zipfileset dir="${lib}" prefix="${lib}"/>
+		</zip>
+		<zip destfile="${release}/Broadcaster-src.zip">
+			<zipfileset dir="${src}" prefix="${src}"/>
+			<zipfileset dir="${lib}" prefix="${lib}"/>
+		</zip>
+	</target>
+</project>
